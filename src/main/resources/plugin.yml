@@ -1,0 +1,4 @@
+name: AethosClaims
+version: '${project.version}'
+main: aethosprojekts.aethosclaims.AethosClaims
+api-version: '1.20'
