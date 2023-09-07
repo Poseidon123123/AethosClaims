@@ -22,7 +22,7 @@ public class ChunkMapper {
     }
 
     public Set<Long> getChunks(ChunkHolder holder) {
-        return buyMap.entrySet().stream().filter(entry -> entry.getValue().equals(holder)).map(Map.Entry::getKey).collect(Collectors.toSet());
+        return buyMap.entrySet().stream().filter(entry -> entry.getValue().getUUID().equals(holder.getUUID())).map(Map.Entry::getKey).collect(Collectors.toSet());
     }
 
     public void buyChunk(Chunk chunk, ChunkHolder holder) {

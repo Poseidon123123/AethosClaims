@@ -1,6 +1,10 @@
 package aethosprojekts.aethosclaims;
 
+import aethosprojekts.aethosclaims.GUI.MapGUI;
+import aethosprojekts.aethosclaims.UIs.MapUI;
+import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginIdentifiableCommand;
@@ -10,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class GrundstückCommand extends Command implements PluginIdentifiableCommand {
     private final AethosClaims claims;
@@ -28,8 +33,17 @@ public class GrundstückCommand extends Command implements PluginIdentifiableCom
                 koordinatenListe.add(mittelpunkt.getWorld().getChunkAt(x, y));
             }
         }
-
+        koordinatenListe.remove(mittelpunkt);
         return koordinatenListe;
+    }
+
+    public static String getChunkInfoString(Chunk chunk) {
+        ChunkMapper mapper = AethosClaims.getInstance().getWorldMapper(chunk.getWorld());
+        return "§8===============" +
+                "\n§6Chunk: " + chunk.getX() + ", " + chunk.getZ() + " " +
+                "\nBeansprucht: " + (mapper.claimedChunk(chunk) ? mapper.getHolders(chunk).stream().map(ChunkHolder::getUUID).map(Bukkit::getOfflinePlayer).map(OfflinePlayer::getName).collect(Collectors.toSet()) : "Keine") +
+                "\nGekauft: " + (mapper.boughtChunk(chunk) ? Bukkit.getOfflinePlayer((mapper.getChunkHolder(chunk).getUUID())).getName() : "Keiner") +
+                "§8===============";
     }
 
     public boolean canBuy(Chunk chunk, Player holder, boolean firstChunk) {
@@ -39,10 +53,15 @@ public class GrundstückCommand extends Command implements PluginIdentifiableCom
         if (mapper.boughtChunk(chunk)) {
             return false;
         }
+        if (!mapper.claimedChunk(chunk) && !firstChunk) {
+            holder.sendMessage("§4Der Chunk muss vor dem Kaufen beansprucht werden, das geht mit /gs claim");
+            return false;
+        }
 
         for (Chunk nearChunk : koordinatenImUmkreis(chunk, claims.getConfig().getInt("GS.Buy.EnemyChunkRange"))) {
             if (mapper.boughtChunk(nearChunk)) {
-                if (!mapper.getChunkHolder(nearChunk).equals(playerChunkHolder)) {
+                if (!mapper.getChunkHolder(nearChunk).getUUID().equals(playerChunkHolder.getUUID())) {
+                    holder.sendMessage("§4Du kannst hier keinen Chunk kaufen da es zu nahe an einem feindlichen Chunk ist, für nähre Infos nutze /gs map");
                     return false;
                 }
             }
@@ -50,7 +69,7 @@ public class GrundstückCommand extends Command implements PluginIdentifiableCom
 
         for (Chunk nearChunk : koordinatenImUmkreis(chunk, claims.getConfig().getInt("GS.Buy.NearTown"))) {
             if (mapper.boughtChunk(nearChunk)) {
-                if (mapper.getChunkHolder(nearChunk).equals(playerChunkHolder)) {
+                if (mapper.getChunkHolder(nearChunk).getUUID().equals(playerChunkHolder.getUUID())) {
                     isNearTown = true;
                 }
             }
@@ -63,12 +82,14 @@ public class GrundstückCommand extends Command implements PluginIdentifiableCom
         PlayerChunkHolder playerChunkHolder = new PlayerChunkHolder(holder.getUniqueId());
         boolean isNearTown = false;
         if (mapper.boughtChunk(chunk)) {
+            holder.sendMessage("§4Du kannst keinen gekauften Chunk beanspruchen");
             return false;
         }
 
         for (Chunk nearChunk : koordinatenImUmkreis(chunk, claims.getConfig().getInt("GS.Buy.EnemyChunkRange"))) {
             if (mapper.boughtChunk(nearChunk)) {
-                if (!mapper.getChunkHolder(nearChunk).equals(playerChunkHolder)) {
+                if (!mapper.getChunkHolder(nearChunk).getUUID().equals(playerChunkHolder.getUUID())) {
+                    holder.sendMessage("§4Du kannst hier nicht claimen da es zu nahe an einem feindlichen Chunk ist, für nähre Infos nutze /gs map");
                     return false;
                 }
             }
@@ -76,7 +97,7 @@ public class GrundstückCommand extends Command implements PluginIdentifiableCom
 
         for (Chunk nearChunk : koordinatenImUmkreis(chunk, claims.getConfig().getInt("GS.Claim.NearTown"))) {
             if (mapper.boughtChunk(nearChunk)) {
-                if (mapper.getChunkHolder(nearChunk).equals(playerChunkHolder)) {
+                if (mapper.getChunkHolder(nearChunk).getUUID().equals(playerChunkHolder.getUUID())) {
                     isNearTown = true;
                 }
             }
@@ -94,26 +115,31 @@ public class GrundstückCommand extends Command implements PluginIdentifiableCom
         if (args.length == 1) {
             if (args[0].equalsIgnoreCase("buy")) {
                 //TODO Money
-                if (mapper.claimedChunk(player.getChunk()) && mapper.getHolders(player.getChunk()).size() == 1 && mapper.getHolders(player.getChunk()).contains(new PlayerChunkHolder(player.getUniqueId()))) {
-                    if (canBuy(player.getChunk(), player, claims.getWorldMapper(player.getWorld()).getChunks(new PlayerChunkHolder(player.getUniqueId())) == null)) {
-                        claims.getWorldMapper(player.getWorld()).buyChunk(player.getChunk(), new PlayerChunkHolder(player.getUniqueId()));
-                        player.sendMessage("§aDu hast den Chunk " + player.getChunk().getX() + ", " + player.getChunk().getZ() + " für dich gekauft");
-                    } else {
-                        player.sendMessage("§4Du kannst den Chunk nicht kaufen, da der Chunk entweder zu nahe an einem anderen Chunk ist oder dieser zu weit weg von einem deiner ist ");
+                boolean first = claims.getWorldMapper(player.getWorld()).getChunks(new PlayerChunkHolder(player.getUniqueId())).isEmpty();
+                System.out.println(first);
+                if (canBuy(player.getChunk(), player, first)) {
+                    mapper.buyChunk(player.getChunk(), new PlayerChunkHolder(player.getUniqueId()));
+                    player.sendMessage("§aDu hast den Chunk " + player.getChunk().getX() + ", " + player.getChunk().getZ() + " für dich gekauft");
+                    if (first) {
+                        mapper.boughtChunk(player.getChunk());
                     }
-                } else {
-                    player.sendMessage("§4Der Chunk muss vor dem Kaufen beansprucht werden, das geht mit /claim");
-                }
-            }
-            if (args[0].equalsIgnoreCase("claim")) {
-                if (canClaim(player.getChunk(), player)) {
-                    mapper.claimChunk(player.getChunk(), new PlayerChunkHolder(player.getUniqueId()));
                 }
             }
         }
+        if (args[0].equalsIgnoreCase("claim")) {
+            if (canClaim(player.getChunk(), player)) {
+                mapper.claimChunk(player.getChunk(), new PlayerChunkHolder(player.getUniqueId()));
+            }
+        }
+        if (args[0].equalsIgnoreCase("info")) {
+            player.sendMessage(getChunkInfoString(player.getChunk()));
+        }
+        if (args[0].equalsIgnoreCase("map")) {
+            List<Chunk> chunkList = koordinatenImUmkreis(player.getChunk(), 2);
+            new MapUI(player, MapGUI.getMapGUI(player, chunkList));
+        }
         return true;
     }
-
 
     @Override
     public @NotNull Plugin getPlugin() {
@@ -122,8 +148,7 @@ public class GrundstückCommand extends Command implements PluginIdentifiableCom
 
     @Override
     public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) throws IllegalArgumentException {
-        return List.of("claim");
+        return List.of("claim", "buy", "info", "map");
     }
-
 
 }
