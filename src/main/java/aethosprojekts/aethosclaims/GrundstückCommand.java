@@ -171,7 +171,7 @@ public class GrundstückCommand extends Command implements PluginIdentifiableCom
                     ChunkPermissionsList chunkPermissionsList = ChunkPermissionsList.getByName(args[2]);
                     if (chunkPermissionsList != null) {
                         if (player1 != null) {
-                            mapper.getChunkHolder(player.getChunk()).addPermission(player1.getUniqueId(), chunkPermissionsList.getHolder());
+                            mapper.getChunkHolder(player.getChunk()).removePermission(player1.getUniqueId(), chunkPermissionsList.getHolder());
                             player.sendMessage("§2Du hast dem Spieler " + player1.getName() + " die Permission " + chunkPermissionsList.getHolder().getName() + " genommen");
                         } else {
                             player.sendMessage("§4Es gibt keinen Spieler mit dem Namen " + args[1] + " auf dem Server");

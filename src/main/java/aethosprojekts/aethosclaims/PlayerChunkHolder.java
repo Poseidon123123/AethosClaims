@@ -28,7 +28,7 @@ public class PlayerChunkHolder implements ChunkHolder {
 
     @Override
     public Map<UUID, List<ChunkPermission>> getPermissionList() {
-        return permissionList;
+        return permissionList != null ? permissionList : new HashMap<>();
     }
 
     @Override
