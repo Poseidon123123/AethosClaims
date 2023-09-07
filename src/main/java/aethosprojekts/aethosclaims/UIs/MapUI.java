@@ -46,36 +46,36 @@ public class MapUI extends UI {
         }
         if (event.getCurrentItem() != null && !event.getCurrentItem().equals(MapGUI.placeHolder)) {
             int s = event.getSlot();
-            List<Integer> a = List.of(2, 11, 20, 29, 38);
-            List<Integer> b = List.of(2, 3, 4, 5, 6);
-            
-            int addZ;
-            if (a.contains(s)) {
-                addZ = -2;
-            } else if (a.contains(s - 1)) {
-                addZ = -1;
-            } else if (a.contains(s - 3)) {
-                addZ = 1;
-            } else if (a.contains(s - 4)) {
-                addZ = 2;
+            List<Integer> row = List.of(2, 11, 20, 29, 38);
+            List<Integer> colum = List.of(2, 3, 4, 5, 6);
+
+            int addRow;
+            if (row.contains(s)) {
+                addRow = -2;
+            } else if (row.contains(s - 1)) {
+                addRow = -1;
+            } else if (row.contains(s - 3)) {
+                addRow = 1;
+            } else if (row.contains(s - 4)) {
+                addRow = 2;
             } else {
-                addZ = 0;
+                addRow = 0;
             }
 
 
-            int addX;
-            if (b.contains(s)) {
-                addX = -2;
-            } else if (b.contains(s - 9)) {
-                addX = -1;
-            } else if (b.contains(s - 18)) {
-                addX = 0;
-            } else if (b.contains(s - 27)) {
-                addX = 1;
+            int addColum;
+            if (colum.contains(s)) {
+                addColum = -2;
+            } else if (colum.contains(s - 9)) {
+                addColum = -1;
+            } else if (colum.contains(s - 18)) {
+                addColum = 0;
+            } else if (colum.contains(s - 27)) {
+                addColum = 1;
             } else {
-                addX = 2;
+                addColum = 2;
             }
-            Chunk chunk = player.getWorld().getChunkAt(player.getChunk().getX() + addX, player.getChunk().getZ() + addZ);
+            Chunk chunk = player.getWorld().getChunkAt(player.getChunk().getX() + addRow, player.getChunk().getZ() + addColum);
             player.sendMessage(GrundstückCommand.getChunkInfoString(chunk));
         }
     }

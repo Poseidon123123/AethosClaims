@@ -1,6 +1,6 @@
 package aethosprojekts.aethosclaims;
 
-import aethosprojekts.aethosclaims.listner.EconomyListener;
+import aethosprojekts.aethosclaims.listner.GSListner;
 import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -30,7 +30,7 @@ public final class AethosClaims extends JavaPlugin {
         Set<World> blackWorlds = blackList.stream().map(getServer()::getWorld).collect(Collectors.toSet());
         blackWorlds.forEach(worlds::remove);
         worlds.forEach(world -> worldMapper.put(world.getName(), new ChunkMapper()));
-        getServer().getPluginManager().registerEvents(new EconomyListener(), this);
+        getServer().getPluginManager().registerEvents(new GSListner(), this);
         getServer().getCommandMap().register(this.getName(), new GrundstückCommand(this));
         getConfig().addDefault("GS.BlacklistWorldsForClaim", List.of(" "));
         getConfig().addDefault("GS.Buy.EnemyChunkRange", 5);

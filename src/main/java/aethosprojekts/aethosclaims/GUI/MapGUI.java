@@ -11,6 +11,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -32,12 +33,27 @@ public class MapGUI {
         Inventory mapGUI = Bukkit.createInventory(player, 45, Component.text("Map"));
         mapGUI.setContents(contents);
         mapGUI.setItem(mapGUI.first(pos), createGUIItems(Material.YELLOW_STAINED_GLASS_PANE, "§6" + player.getChunk().getX() + ", " + player.getChunk().getZ(), "§1Deine Position"));
-        for (Chunk chunk1 : chunkList) {
+        Chunk mittelpunkt = player.getChunk();
+        List<Integer> NS = List.of(-2, -1, 0, 1, 2);
+        List<Chunk> chunks = new ArrayList<>();
+        for (int z : NS) {
+            for (int x : NS) {
+                chunks.add(mittelpunkt.getWorld().getChunkAt(mittelpunkt.getX() + x, mittelpunkt.getZ() + z));
+            }
+        }
+        chunks.remove(mittelpunkt);
+
+
+        for (Chunk chunk1 : chunks) {
             System.out.println(chunk1);
-            if (mapper.boughtChunk(chunk1) && !Objects.equals(mapper.getChunkHolder(chunk1).getUUID(), player.getUniqueId())) {
-                mapGUI.setItem(mapGUI.first(chunk), createGUIItems(Material.RED_STAINED_GLASS_PANE, "§c" + chunk1.getX() + ", " + chunk1.getZ()));
+            if (mapper.boughtChunk(chunk1)) {
+                if (!Objects.equals(mapper.getChunkHolder(chunk1).getUUID(), player.getUniqueId())) {
+                    mapGUI.setItem(mapGUI.first(chunk), createGUIItems(Material.RED_STAINED_GLASS_PANE, "§c" + chunk1.getX() + ", " + chunk1.getZ()));
+                } else {
+                    mapGUI.setItem(mapGUI.first(chunk), createGUIItems(Material.BLUE_STAINED_GLASS_PANE, "§1" + chunk1.getX() + ", " + chunk1.getZ()));
+                }
             } else if (mapper.claimedChunk(chunk1)) {
-                mapGUI.setItem(mapGUI.first(chunk), createGUIItems(Material.BLUE_STAINED_GLASS_PANE, "§5" + chunk1.getX() + ", " + chunk1.getZ()));
+                mapGUI.setItem(mapGUI.first(chunk), createGUIItems(Material.LIGHT_GRAY_STAINED_GLASS_PANE, "§5" + chunk1.getX() + ", " + chunk1.getZ()));
             } else {
                 mapGUI.setItem(mapGUI.first(chunk), createGUIItems(Material.LIME_STAINED_GLASS_PANE, "§a" + chunk1.getX() + ", " + chunk1.getZ()));
             }

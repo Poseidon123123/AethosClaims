@@ -1,6 +1,7 @@
 package aethosprojekts.aethosclaims;
 
 import aethosprojekts.aethosclaims.GUI.MapGUI;
+import aethosprojekts.aethosclaims.Interfaces.ChunkHolder;
 import aethosprojekts.aethosclaims.UIs.MapUI;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
@@ -43,7 +44,7 @@ public class GrundstückCommand extends Command implements PluginIdentifiableCom
                 "\n§6Chunk: " + chunk.getX() + ", " + chunk.getZ() + " " +
                 "\nBeansprucht: " + (mapper.claimedChunk(chunk) ? mapper.getHolders(chunk).stream().map(ChunkHolder::getUUID).map(Bukkit::getOfflinePlayer).map(OfflinePlayer::getName).collect(Collectors.toSet()) : "Keine") +
                 "\nGekauft: " + (mapper.boughtChunk(chunk) ? Bukkit.getOfflinePlayer((mapper.getChunkHolder(chunk).getUUID())).getName() : "Keiner") +
-                "§8===============";
+                "\n§8===============";
     }
 
     public boolean canBuy(Chunk chunk, Player holder, boolean firstChunk) {
@@ -74,6 +75,9 @@ public class GrundstückCommand extends Command implements PluginIdentifiableCom
                 }
             }
         }
+        if (!isNearTown) {
+            holder.sendMessage("§4Du kannst diesen Chunk nicht beanspruchen da er zu weit von deinen gekauften Chunks ist");
+        }
         return isNearTown;
     }
 
@@ -102,6 +106,9 @@ public class GrundstückCommand extends Command implements PluginIdentifiableCom
                 }
             }
         }
+        if (!isNearTown) {
+            holder.sendMessage("§4Du kannst diesen Chunk nicht beanspruchen da er zu weit von deinen gekauften Chunks ist");
+        }
         return isNearTown;
     }
 
@@ -121,23 +128,63 @@ public class GrundstückCommand extends Command implements PluginIdentifiableCom
                     mapper.buyChunk(player.getChunk(), new PlayerChunkHolder(player.getUniqueId()));
                     player.sendMessage("§aDu hast den Chunk " + player.getChunk().getX() + ", " + player.getChunk().getZ() + " für dich gekauft");
                     if (first) {
-                        mapper.boughtChunk(player.getChunk());
+                        mapper.claimChunk(player.getChunk(), new PlayerChunkHolder(player.getUniqueId()));
                     }
                 }
             }
-        }
-        if (args[0].equalsIgnoreCase("claim")) {
-            if (canClaim(player.getChunk(), player)) {
-                mapper.claimChunk(player.getChunk(), new PlayerChunkHolder(player.getUniqueId()));
+            if (args[0].equalsIgnoreCase("claim")) {
+                if (canClaim(player.getChunk(), player)) {
+                    mapper.claimChunk(player.getChunk(), new PlayerChunkHolder(player.getUniqueId()));
+                    player.sendMessage("§2Du hast den Chunk " + player.getChunk().getX() + ", " + player.getChunk().getZ() + " für dich beansprucht");
+                }
+            }
+            if (args[0].equalsIgnoreCase("info")) {
+                player.sendMessage(getChunkInfoString(player.getChunk()));
+            }
+            if (args[0].equalsIgnoreCase("map")) {
+                List<Chunk> chunkList = koordinatenImUmkreis(player.getChunk(), 2);
+                new MapUI(player, MapGUI.getMapGUI(player, chunkList));
             }
         }
-        if (args[0].equalsIgnoreCase("info")) {
-            player.sendMessage(getChunkInfoString(player.getChunk()));
+        if (args.length == 3) {
+            if (args[0].equalsIgnoreCase("addPerm")) {
+                if (mapper.boughtChunk(player.getChunk())) {
+                    Player player1 = Bukkit.getPlayerExact(args[1]);
+                    ChunkPermissionsList chunkPermissionsList = ChunkPermissionsList.getByName(args[2]);
+                    if (chunkPermissionsList != null) {
+                        if (player1 != null) {
+                            mapper.getChunkHolder(player.getChunk()).addPermission(player1.getUniqueId(), chunkPermissionsList.getHolder());
+                            player.sendMessage("§2Du hast dem Spieler " + player1.getName() + " die Permission " + chunkPermissionsList.getHolder().getName() + " gegeben");
+                        } else {
+                            player.sendMessage("§4Es gibt keinen Spieler mit dem Namen " + args[1] + " auf dem Server");
+                        }
+                    } else {
+                        player.sendMessage("§4Die angegebene Permission exisitert nicht");
+                    }
+                } else {
+                    player.sendMessage("§4Du musst auf einem gekaufen Chunk sein um einem Spieler Rechte zu geben");
+                }
+            }
+            if (args[0].equalsIgnoreCase("removePerm")) {
+                if (mapper.boughtChunk(player.getChunk())) {
+                    Player player1 = Bukkit.getPlayerExact(args[1]);
+                    ChunkPermissionsList chunkPermissionsList = ChunkPermissionsList.getByName(args[2]);
+                    if (chunkPermissionsList != null) {
+                        if (player1 != null) {
+                            mapper.getChunkHolder(player.getChunk()).addPermission(player1.getUniqueId(), chunkPermissionsList.getHolder());
+                            player.sendMessage("§2Du hast dem Spieler " + player1.getName() + " die Permission " + chunkPermissionsList.getHolder().getName() + " genommen");
+                        } else {
+                            player.sendMessage("§4Es gibt keinen Spieler mit dem Namen " + args[1] + " auf dem Server");
+                        }
+                    } else {
+                        player.sendMessage("§4Die angegebene Permission exisitert nicht");
+                    }
+                } else {
+                    player.sendMessage("§4Du musst auf einem gekaufen Chunk sein um einem Spieler Rechte zu nehmen");
+                }
+            }
         }
-        if (args[0].equalsIgnoreCase("map")) {
-            List<Chunk> chunkList = koordinatenImUmkreis(player.getChunk(), 2);
-            new MapUI(player, MapGUI.getMapGUI(player, chunkList));
-        }
+
         return true;
     }
 
@@ -148,7 +195,21 @@ public class GrundstückCommand extends Command implements PluginIdentifiableCom
 
     @Override
     public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) throws IllegalArgumentException {
-        return List.of("claim", "buy", "info", "map");
+        if (args.length <= 1) {
+            return List.of("claim", "buy", "info", "map", "addPerm", "removePerm");
+        } else if (args.length == 2) {
+            List<String> a = new ArrayList<>();
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                a.add(player.getName());
+            }
+            return a;
+        } else {
+            List<String> a = new ArrayList<>();
+            for (ChunkPermissionsList player : ChunkPermissionsList.values()) {
+                a.add(player.getHolder().getName());
+            }
+            return a;
+        }
     }
 
 }

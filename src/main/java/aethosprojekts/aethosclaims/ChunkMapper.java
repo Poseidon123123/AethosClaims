@@ -1,5 +1,6 @@
 package aethosprojekts.aethosclaims;
 
+import aethosprojekts.aethosclaims.Interfaces.ChunkHolder;
 import org.bukkit.Chunk;
 
 import java.util.HashMap;
