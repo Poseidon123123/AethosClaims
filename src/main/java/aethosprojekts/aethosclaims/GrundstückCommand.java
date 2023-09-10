@@ -1,8 +1,9 @@
 package aethosprojekts.aethosclaims;
 
-import aethosprojekts.aethosclaims.GUI.MapGUI;
+import aethosprojekts.aethosclaims.GUI.GUIMap;
 import aethosprojekts.aethosclaims.Interfaces.ChunkHolder;
-import aethosprojekts.aethosclaims.UIs.MapUI;
+import aethosprojekts.aethosclaims.events.*;
+import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.OfflinePlayer;
@@ -119,68 +120,125 @@ public class GrundstückCommand extends Command implements PluginIdentifiableCom
             return true;
         }
         ChunkMapper mapper = claims.getWorldMapper(player.getWorld());
+        Chunk chunk = player.getChunk();
         if (args.length == 1) {
             if (args[0].equalsIgnoreCase("buy")) {
-                //TODO Money
-                boolean first = claims.getWorldMapper(player.getWorld()).getChunks(new PlayerChunkHolder(player.getUniqueId())).isEmpty();
-                System.out.println(first);
-                if (canBuy(player.getChunk(), player, first)) {
-                    mapper.buyChunk(player.getChunk(), new PlayerChunkHolder(player.getUniqueId()));
-                    player.sendMessage("§aDu hast den Chunk " + player.getChunk().getX() + ", " + player.getChunk().getZ() + " für dich gekauft");
-                    if (first) {
-                        mapper.claimChunk(player.getChunk(), new PlayerChunkHolder(player.getUniqueId()));
+                PlayerChunkHolder holder = new PlayerChunkHolder(player.getUniqueId());
+                boolean first = claims.getWorldMapper(player.getWorld()).getChunks(holder).isEmpty();
+                ChunkBuyEvent event = new ChunkBuyEvent(holder, player.getChunk(), claims.getConfig().getInt("GS.Buy.Cost"), canBuy(chunk, player, first), false);
+                event.setCancelled(!event.canBuy());
+                claims.getServer().getPluginManager().callEvent(event);
+                if (!event.isCancelled()) {
+                    if (event.canBuy()) {
+                        if (!event.hasPayed()) {
+                            EconomyResponse response = Provider.getEconomy().withdrawPlayer(player, player.getWorld().getName(), event.getCost());
+                            if (!response.transactionSuccess()) {
+                                return true;
+                            }
+                        }
+                        mapper.buyChunk(chunk, holder);
+                        player.sendMessage("§aDu hast den Chunk " + chunk.getX() + ", " + chunk.getZ() + " für dich gekauft");
+                        if (first) {
+                            mapper.claimChunk(chunk, holder);
+                        }
                     }
                 }
             }
             if (args[0].equalsIgnoreCase("claim")) {
-                if (canClaim(player.getChunk(), player)) {
-                    mapper.claimChunk(player.getChunk(), new PlayerChunkHolder(player.getUniqueId()));
-                    player.sendMessage("§2Du hast den Chunk " + player.getChunk().getX() + ", " + player.getChunk().getZ() + " für dich beansprucht");
+                PlayerChunkHolder holder = new PlayerChunkHolder(player.getUniqueId());
+                ChunkClaimEvent event = new ChunkClaimEvent(holder, chunk, claims.getConfig().getInt("GS.Claim.Cost"), canClaim(chunk, player), false);
+                event.setCancelled(!event.canClaim());
+                claims.getServer().getPluginManager().callEvent(event);
+                if (!event.isCancelled()) {
+                    if (event.canClaim()) {
+                        if (!event.hasPayed()) {
+                            EconomyResponse response = Provider.getEconomy().withdrawPlayer(player, player.getWorld().getName(), event.getCost());
+                            if (!response.transactionSuccess()) {
+                                return true;
+                            }
+                        }
+                        mapper.claimChunk(chunk, holder);
+                        player.sendMessage("§2Du hast den Chunk " + chunk.getX() + ", " + chunk.getZ() + " für dich beansprucht");
+                    }
                 }
             }
             if (args[0].equalsIgnoreCase("info")) {
-                player.sendMessage(getChunkInfoString(player.getChunk()));
-            }
-            if (args[0].equalsIgnoreCase("map")) {
-                List<Chunk> chunkList = koordinatenImUmkreis(player.getChunk(), 2);
-                new MapUI(player, MapGUI.getMapGUI(player, chunkList));
-            }
-        }
-        if (args.length == 3) {
-            if (args[0].equalsIgnoreCase("addPerm")) {
-                if (mapper.boughtChunk(player.getChunk())) {
-                    Player player1 = Bukkit.getPlayerExact(args[1]);
-                    DefaultPermission defaultPermission = DefaultPermission.valueOf(args[2]);
-                    if (defaultPermission != null) {
-                        if (player1 != null) {
-                            mapper.getChunkHolder(player.getChunk()).addPermission(player1.getUniqueId(), defaultPermission);
-                            player.sendMessage("§2Du hast dem Spieler " + player1.getName() + " die Permission " + defaultPermission.getName() + " gegeben");
-                        } else {
-                            player.sendMessage("§4Es gibt keinen Spieler mit dem Namen " + args[1] + " auf dem Server");
-                        }
-                    } else {
-                        player.sendMessage("§4Die angegebene Permission exisitert nicht");
-                    }
-                } else {
-                    player.sendMessage("§4Du musst auf einem gekaufen Chunk sein um einem Spieler Rechte zu geben");
+                ChunkInfoEvent event = new ChunkInfoEvent(new PlayerChunkHolder(player.getUniqueId()), chunk, getChunkInfoString(chunk));
+                claims.getServer().getPluginManager().callEvent(event);
+                if (!event.isCancelled()) {
+                    player.sendMessage(event.getMessage());
                 }
             }
-            if (args[0].equalsIgnoreCase("removePerm")) {
-                if (mapper.boughtChunk(player.getChunk())) {
-                    Player player1 = Bukkit.getPlayerExact(args[1]);
-                    DefaultPermission defaultPermission = DefaultPermission.valueOf(args[2]);
-                    if (defaultPermission != null) {
-                        if (player1 != null) {
-                            mapper.getChunkHolder(player.getChunk()).removePermission(player1.getUniqueId(), defaultPermission);
-                            player.sendMessage("§2Du hast dem Spieler " + player1.getName() + " die Permission " + defaultPermission.getName() + " genommen");
-                        } else {
-                            player.sendMessage("§4Es gibt keinen Spieler mit dem Namen " + args[1] + " auf dem Server");
+            if (args[0].equalsIgnoreCase("map")) {
+                ChunkMapEvent event = new ChunkMapEvent(new PlayerChunkHolder(player.getUniqueId()), chunk);
+                if (!event.isCancelled()) {
+                    player.openInventory(new GUIMap("Map", event.getChunk(), new PlayerChunkHolder(player.getUniqueId())).getInventory());
+                }
+            }
+            if (args[0].equalsIgnoreCase("sell")) {
+                if (mapper.boughtChunk(chunk)) {
+                    if (!mapper.getChunkHolder(chunk).getUUID().equals(player.getUniqueId())) {
+                        player.sendMessage("§4Du der Besitzer dieses Chunks sein um ihn zu verkaufen");
+                        return true;
+                    }
+                    ChunkSellEvent event = new ChunkSellEvent(new PlayerChunkHolder(player.getUniqueId()), chunk, SellType.Buy, claims.getConfig().getInt("GS.Sell.BuyReturn"));
+                    claims.getServer().getPluginManager().callEvent(event);
+                    if (!event.isCancelled()) {
+                        mapper.sellChunk(chunk);
+                        mapper.unClaimChunk(chunk);
+                        Provider.getEconomy().depositPlayer(player, event.getWithDraw());
+                        player.sendMessage("§2Du hast diesen Chunk verkauft");
+                    }
+                } else if (mapper.claimedChunk(chunk)) {
+                    if (mapper.getHolders(chunk).contains(new PlayerChunkHolder(player.getUniqueId()))) {
+                        ChunkSellEvent event = new ChunkSellEvent(new PlayerChunkHolder(player.getUniqueId()), chunk, SellType.Claim, claims.getConfig().getInt("GS.Sell.ClaimReturn"));
+                        claims.getServer().getPluginManager().callEvent(event);
+                        if (!event.isCancelled()) {
+                            mapper.unClaimChunk(chunk);
+                            Provider.getEconomy().depositPlayer(player, event.getWithDraw());
+                            player.sendMessage("§2Du hast diesen Chunk freigegeben");
                         }
                     } else {
-                        player.sendMessage("§4Die angegebene Permission exisitert nicht");
+                        player.sendMessage("§4Du musst diesen Chunk beansprucht haben um ihn zu verkaufen");
                     }
                 } else {
-                    player.sendMessage("§4Du musst auf einem gekaufen Chunk sein um einem Spieler Rechte zu nehmen");
+                    ChunkSellEvent event = new ChunkSellEvent(new PlayerChunkHolder(player.getUniqueId()), chunk, SellType.Nonne, 0);
+                    if (!event.isCancelled()) {
+                        player.sendMessage("§4Du kannst keinen unbeanspruchten Chunk verkaufen");
+                    }
+                }
+            }
+        }
+        if (args.length == 4) {
+            if (args[0].equalsIgnoreCase("Perm")) {
+                Player player1 = Bukkit.getPlayerExact(args[2]);
+                if (player1 == null) {
+                    player.sendMessage("§4Es gibt keinen Spieler mit dem Namen " + args[2] + " auf dem Server");
+                    return true;
+                }
+                DefaultPermission defaultPermission = DefaultPermission.valueOf(args[3]);
+                if (args[1].equalsIgnoreCase("add")) {
+                    if (mapper.boughtChunk(player.getChunk())) {
+                        ChunkAddPermEvent event = new ChunkAddPermEvent(new PlayerChunkHolder(player.getUniqueId()), chunk, defaultPermission, player1);
+                        claims.getServer().getPluginManager().callEvent(event);
+                        if (!event.isCancelled()) {
+                            mapper.getChunkHolder(player.getChunk()).addPermission(event.getPermAddPlayer().getUniqueId(), event.getPermissions());
+                            player.sendMessage("§2Du hast dem Spieler " + event.getPermAddPlayer().getName() + " die Permission " + event.getPermissions().getName() + " gegeben");
+                        }
+                    } else {
+                        player.sendMessage("§4Du musst auf einem gekauften Chunk sein um einem Spieler Rechte zu geben");
+                    }
+                }
+                if (args[1].equalsIgnoreCase("remove")) {
+                    if (mapper.boughtChunk(player.getChunk())) {
+                        ChunkRemovePermEvent event = new ChunkRemovePermEvent(new PlayerChunkHolder(player.getUniqueId()), chunk, defaultPermission, player1);
+                        if (!event.isCancelled()) {
+                            mapper.getChunkHolder(player.getChunk()).removePermission(event.getPermAddPlayer().getUniqueId(), event.getPermissions());
+                            player.sendMessage("§2Du hast dem Spieler " + event.getPermAddPlayer().getName() + " die Permission " + event.getPermissions().getName() + " genommen");
+                        }
+                    } else {
+                        player.sendMessage("§4Du musst auf einem gekauften Chunk sein um einem Spieler Rechte zu nehmen");
+                    }
                 }
             }
         }
@@ -196,19 +254,23 @@ public class GrundstückCommand extends Command implements PluginIdentifiableCom
     @Override
     public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) throws IllegalArgumentException {
         if (args.length <= 1) {
-            return List.of("claim", "buy", "info", "map", "addPerm", "removePerm");
-        } else if (args.length == 2) {
+            return List.of("claim", "buy", "info", "map", "Perm");
+        } else if (args.length == 2 && args[0].equalsIgnoreCase("Perm")) {
+            return List.of("add", "remove");
+        } else if (args.length == 3 && args[0].equalsIgnoreCase("Perm")) {
             List<String> a = new ArrayList<>();
             for (Player player : Bukkit.getOnlinePlayers()) {
                 a.add(player.getName());
             }
             return a;
-        } else {
+        } else if (args.length == 4 && args[0].equalsIgnoreCase("Perm")) {
             List<String> a = new ArrayList<>();
             for (DefaultPermission player : DefaultPermission.values()) {
                 a.add(player.getName());
             }
             return a;
+        } else {
+            return List.of(" ");
         }
     }
 

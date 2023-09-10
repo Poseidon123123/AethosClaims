@@ -13,7 +13,7 @@ public interface ChunkHolder {
     void setPermissionList(Map<UUID, Set<ChunkPermission>> permissionList);
 
     default boolean hasPermission(UUID uuid, ChunkPermission permission) {
-        return getPermissionList().get(uuid).contains(permission) || uuid.equals(getUUID());
+        return getPermissionList().computeIfAbsent(uuid, k -> new HashSet<>()).contains(permission) || uuid.equals(getUUID());
     }
 
 

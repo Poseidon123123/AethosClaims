@@ -36,6 +36,10 @@ public final class AethosClaims extends JavaPlugin {
         getConfig().addDefault("GS.Buy.EnemyChunkRange", 5);
         getConfig().addDefault("GS.Buy.NearTown", 1);
         getConfig().addDefault("GS.Claim.NearTown", 10);
+        getConfig().addDefault("GS.Buy.Cost", 5000);
+        getConfig().addDefault("GS.Claim.Cost", 50);
+        getConfig().addDefault("GS.Sell.BuyReturn", 50);
+        getConfig().addDefault("GS.Sell.ClaimReturn", 0);
         getConfig().options().copyDefaults(true);
         saveConfig();
     }

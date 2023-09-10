@@ -65,6 +65,10 @@
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
+        <repository>
+            <id>codemc-releases</id>
+            <url>https://repo.codemc.io/repository/maven-releases/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -85,6 +89,12 @@
             <artifactId>annotations</artifactId>
             <version>23.0.0</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>xyz.janboerman</groupId>
+            <artifactId>GuiLib-Plugin</artifactId>
+            <version>1.11.9</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

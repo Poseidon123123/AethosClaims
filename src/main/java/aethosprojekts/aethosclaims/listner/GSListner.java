@@ -38,7 +38,7 @@ public class GSListner implements Listener {
     public void breakBlock(BlockBreakEvent event) {
         ChunkMapper mapper = AethosClaims.getInstance().getWorldMapper(event.getBlock().getWorld());
         if (mapper.boughtChunk(event.getBlock().getChunk())) {
-            if (mapper.getChunkHolder(event.getBlock().getChunk()).hasPermission(event.getPlayer().getUniqueId(), DefaultPermission.Destroy)) {
+            if (!mapper.getChunkHolder(event.getBlock().getChunk()).hasPermission(event.getPlayer().getUniqueId(), DefaultPermission.Destroy)) {
                 event.setCancelled(true);
                 event.getPlayer().sendMessage("§4Du darfst hier nicht abbauen");
             }
@@ -49,7 +49,7 @@ public class GSListner implements Listener {
     public void interActEvent(PlayerInteractEvent event) {
         ChunkMapper mapper = AethosClaims.getInstance().getWorldMapper(event.getPlayer().getWorld());
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-            if (mapper.boughtChunk(event.getPlayer().getChunk())) {
+            if (!mapper.boughtChunk(event.getPlayer().getChunk())) {
                 if (mapper.getChunkHolder(event.getPlayer().getChunk()).hasPermission(event.getPlayer().getUniqueId(), DefaultPermission.Interact)) {
                     event.setCancelled(true);
                     event.getPlayer().sendMessage("§4Du darfst dass hier nicht benutzen");

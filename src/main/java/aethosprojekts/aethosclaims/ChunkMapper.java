@@ -40,8 +40,8 @@ public class ChunkMapper {
         return buyMap.get(chunk.getChunkKey());
     }
 
-    public boolean sellChunk(Chunk chunk) {
-        return buyMap.remove(chunk.getChunkKey()) != null;
+    public void sellChunk(Chunk chunk) {
+        buyMap.remove(chunk.getChunkKey());
     }
 
     public void claimChunk(Chunk chunk, ChunkHolder holder) {
@@ -52,6 +52,10 @@ public class ChunkMapper {
         return claimMap.containsKey(chunk.getChunkKey());
     }
 
+
+    public void unClaimChunk(Chunk chunk) {
+        claimMap.remove(chunk.getChunkKey());
+    }
 
     public Set<ChunkHolder> getHolders(Chunk chunk) {
         return claimMap.get(chunk.getChunkKey());

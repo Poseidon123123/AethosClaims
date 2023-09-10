@@ -36,4 +36,17 @@ public class PlayerChunkHolder implements ChunkHolder {
         this.permissionList = permissionList;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof PlayerChunkHolder holder) {
+            return this.getUUID().equals(holder.getUUID());
+        } else {
+            return super.equals(obj);
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return uuid.hashCode();
+    }
 }
