@@ -3,25 +3,17 @@ package aethosprojekts.aethosclaims.listner;
 import aethosprojekts.aethosclaims.AethosClaims;
 import aethosprojekts.aethosclaims.ChunkMapper;
 import aethosprojekts.aethosclaims.DefaultPermission;
-import aethosprojekts.aethosclaims.UIs.UI;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 public class GSListner implements Listener {
 
-    @EventHandler
-    public void inventoryClick(InventoryClickEvent event) {
-        if (event.getView() instanceof UI ui) {
-            ui.onClick(event);
-        }
-    }
 
     @EventHandler
     public void placeBlock(BlockPlaceEvent event) {
