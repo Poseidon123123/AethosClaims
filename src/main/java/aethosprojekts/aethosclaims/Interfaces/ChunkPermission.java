@@ -1,9 +1,9 @@
 package aethosprojekts.aethosclaims.Interfaces;
 
-import java.util.UUID;
+import org.bukkit.NamespacedKey;
 
 public interface ChunkPermission {
     String getName();
 
-    UUID getUUID();
+    NamespacedKey getKey();
 }

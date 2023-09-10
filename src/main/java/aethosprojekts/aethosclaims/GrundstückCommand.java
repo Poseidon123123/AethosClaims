@@ -150,11 +150,11 @@ public class GrundstückCommand extends Command implements PluginIdentifiableCom
             if (args[0].equalsIgnoreCase("addPerm")) {
                 if (mapper.boughtChunk(player.getChunk())) {
                     Player player1 = Bukkit.getPlayerExact(args[1]);
-                    ChunkPermissionsList chunkPermissionsList = ChunkPermissionsList.getByName(args[2]);
-                    if (chunkPermissionsList != null) {
+                    DefaultPermission defaultPermission = DefaultPermission.valueOf(args[2]);
+                    if (defaultPermission != null) {
                         if (player1 != null) {
-                            mapper.getChunkHolder(player.getChunk()).addPermission(player1.getUniqueId(), chunkPermissionsList.getHolder());
-                            player.sendMessage("§2Du hast dem Spieler " + player1.getName() + " die Permission " + chunkPermissionsList.getHolder().getName() + " gegeben");
+                            mapper.getChunkHolder(player.getChunk()).addPermission(player1.getUniqueId(), defaultPermission);
+                            player.sendMessage("§2Du hast dem Spieler " + player1.getName() + " die Permission " + defaultPermission.getName() + " gegeben");
                         } else {
                             player.sendMessage("§4Es gibt keinen Spieler mit dem Namen " + args[1] + " auf dem Server");
                         }
@@ -168,11 +168,11 @@ public class GrundstückCommand extends Command implements PluginIdentifiableCom
             if (args[0].equalsIgnoreCase("removePerm")) {
                 if (mapper.boughtChunk(player.getChunk())) {
                     Player player1 = Bukkit.getPlayerExact(args[1]);
-                    ChunkPermissionsList chunkPermissionsList = ChunkPermissionsList.getByName(args[2]);
-                    if (chunkPermissionsList != null) {
+                    DefaultPermission defaultPermission = DefaultPermission.valueOf(args[2]);
+                    if (defaultPermission != null) {
                         if (player1 != null) {
-                            mapper.getChunkHolder(player.getChunk()).removePermission(player1.getUniqueId(), chunkPermissionsList.getHolder());
-                            player.sendMessage("§2Du hast dem Spieler " + player1.getName() + " die Permission " + chunkPermissionsList.getHolder().getName() + " genommen");
+                            mapper.getChunkHolder(player.getChunk()).removePermission(player1.getUniqueId(), defaultPermission);
+                            player.sendMessage("§2Du hast dem Spieler " + player1.getName() + " die Permission " + defaultPermission.getName() + " genommen");
                         } else {
                             player.sendMessage("§4Es gibt keinen Spieler mit dem Namen " + args[1] + " auf dem Server");
                         }
@@ -205,8 +205,8 @@ public class GrundstückCommand extends Command implements PluginIdentifiableCom
             return a;
         } else {
             List<String> a = new ArrayList<>();
-            for (ChunkPermissionsList player : ChunkPermissionsList.values()) {
-                a.add(player.getHolder().getName());
+            for (DefaultPermission player : DefaultPermission.values()) {
+                a.add(player.getName());
             }
             return a;
         }

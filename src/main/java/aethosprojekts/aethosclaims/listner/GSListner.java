@@ -2,7 +2,7 @@ package aethosprojekts.aethosclaims.listner;
 
 import aethosprojekts.aethosclaims.AethosClaims;
 import aethosprojekts.aethosclaims.ChunkMapper;
-import aethosprojekts.aethosclaims.ChunkPermissionsList;
+import aethosprojekts.aethosclaims.DefaultPermission;
 import aethosprojekts.aethosclaims.UIs.UI;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -27,7 +27,7 @@ public class GSListner implements Listener {
     public void placeBlock(BlockPlaceEvent event) {
         ChunkMapper mapper = AethosClaims.getInstance().getWorldMapper(event.getBlock().getWorld());
         if (mapper.boughtChunk(event.getBlock().getChunk())) {
-            if (!mapper.getChunkHolder(event.getBlock().getChunk()).hasPermission(event.getPlayer().getUniqueId(), ChunkPermissionsList.place.getHolder())) {
+            if (!mapper.getChunkHolder(event.getBlock().getChunk()).hasPermission(event.getPlayer().getUniqueId(), DefaultPermission.Place)) {
                 event.setCancelled(true);
                 event.getPlayer().sendMessage("§4Du darfst hier nichts platzieren");
             }
@@ -38,7 +38,7 @@ public class GSListner implements Listener {
     public void breakBlock(BlockBreakEvent event) {
         ChunkMapper mapper = AethosClaims.getInstance().getWorldMapper(event.getBlock().getWorld());
         if (mapper.boughtChunk(event.getBlock().getChunk())) {
-            if (mapper.getChunkHolder(event.getBlock().getChunk()).hasPermission(event.getPlayer().getUniqueId(), ChunkPermissionsList.destroy.getHolder())) {
+            if (mapper.getChunkHolder(event.getBlock().getChunk()).hasPermission(event.getPlayer().getUniqueId(), DefaultPermission.Destroy)) {
                 event.setCancelled(true);
                 event.getPlayer().sendMessage("§4Du darfst hier nicht abbauen");
             }
@@ -50,7 +50,7 @@ public class GSListner implements Listener {
         ChunkMapper mapper = AethosClaims.getInstance().getWorldMapper(event.getPlayer().getWorld());
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
             if (mapper.boughtChunk(event.getPlayer().getChunk())) {
-                if (mapper.getChunkHolder(event.getPlayer().getChunk()).hasPermission(event.getPlayer().getUniqueId(), ChunkPermissionsList.interact.getHolder())) {
+                if (mapper.getChunkHolder(event.getPlayer().getChunk()).hasPermission(event.getPlayer().getUniqueId(), DefaultPermission.Interact)) {
                     event.setCancelled(true);
                     event.getPlayer().sendMessage("§4Du darfst dass hier nicht benutzen");
                 }
@@ -62,7 +62,7 @@ public class GSListner implements Listener {
     public void interActEvent(PlayerInteractEntityEvent event) {
         ChunkMapper mapper = AethosClaims.getInstance().getWorldMapper(event.getPlayer().getWorld());
         if (mapper.boughtChunk(event.getPlayer().getChunk())) {
-            if (mapper.getChunkHolder(event.getPlayer().getChunk()).hasPermission(event.getPlayer().getUniqueId(), ChunkPermissionsList.interact.getHolder())) {
+            if (mapper.getChunkHolder(event.getPlayer().getChunk()).hasPermission(event.getPlayer().getUniqueId(), DefaultPermission.Interact)) {
                 event.setCancelled(true);
                 event.getPlayer().sendMessage("§4Du darfst dass hier nicht benutzen");
             }
@@ -73,7 +73,7 @@ public class GSListner implements Listener {
     public void interActEvent(PlayerInteractAtEntityEvent event) {
         ChunkMapper mapper = AethosClaims.getInstance().getWorldMapper(event.getPlayer().getWorld());
         if (mapper.boughtChunk(event.getPlayer().getChunk())) {
-            if (!mapper.getChunkHolder(event.getPlayer().getChunk()).hasPermission(event.getPlayer().getUniqueId(), ChunkPermissionsList.interact.getHolder())) {
+            if (!mapper.getChunkHolder(event.getPlayer().getChunk()).hasPermission(event.getPlayer().getUniqueId(), DefaultPermission.Interact)) {
                 event.setCancelled(true);
                 event.getPlayer().sendMessage("§4Du darfst dass hier nicht benutzen");
             }
