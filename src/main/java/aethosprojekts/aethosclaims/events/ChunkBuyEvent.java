@@ -8,16 +8,20 @@ public class ChunkBuyEvent extends ChunkPlayerEvent {
     private final boolean canBuy;
     private int cost;
     private boolean hasPayed;
+    private boolean attackable;
+    private boolean isFirstChunk;
 
-    public ChunkBuyEvent(@NotNull ChunkHolder holder, Chunk chunk, int cost, boolean canBuy, boolean hasPayed) {
+    public ChunkBuyEvent(@NotNull ChunkHolder holder, Chunk chunk, int cost, boolean canBuy, boolean hasPayed, boolean timeUp, boolean isFirstChunk) {
         super(holder, chunk);
         this.cost = cost;
         this.canBuy = canBuy;
         this.hasPayed = hasPayed;
+        this.attackable = timeUp;
+        this.isFirstChunk = isFirstChunk;
     }
 
     public int getCost() {
-        return Math.min(cost, 0);
+        return Math.max(cost, 0);
     }
 
     public void setCost(int cost) {
@@ -36,4 +40,19 @@ public class ChunkBuyEvent extends ChunkPlayerEvent {
         this.hasPayed = hasPayed;
     }
 
+    public boolean isNotAttackable() {
+        return !attackable;
+    }
+
+    public void setTimeUp(boolean timeUp) {
+        this.attackable = timeUp;
+    }
+
+    public boolean isFirstChunk() {
+        return isFirstChunk;
+    }
+
+    public void setFirstChunk(boolean firstChunk) {
+        isFirstChunk = firstChunk;
+    }
 }

@@ -1,19 +1,51 @@
 package aethosprojekts.aethosclaims.listner;
 
-import aethosprojekts.aethosclaims.AethosClaims;
-import aethosprojekts.aethosclaims.ChunkMapper;
-import aethosprojekts.aethosclaims.DefaultPermission;
+import aethosprojekts.aethosclaims.*;
+import aethosprojekts.aethosclaims.events.ChunkAttackEvent;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 public class GSListner implements Listener {
 
+    @EventHandler
+    public void playerKill(PlayerDeathEvent event) {
+        PlayerChunkHolder holder = new PlayerChunkHolder(event.getPlayer().getUniqueId());
+        ClaimFighter killed = ClaimFighter.getByHoler(holder);
+        if (killed == null) {
+            return;
+        }
+        if (event.getEntity().getKiller() == null) {
+            return;
+        }
+        if (!killed.isKill()) {
+            return;
+        }
+        Player killer = event.getEntity().getKiller();
+        PlayerChunkHolder killHolder = new PlayerChunkHolder(killer.getUniqueId());
+        ClaimFighter killFighter = ClaimFighter.getByHoler(killHolder);
+        if (killFighter == null) {
+            return;
+        }
+        if (killed.equals(killFighter)) {
+            killFighter.addScore(killHolder, 1);
+            killHolder.sendMessage("§2Der Spieler " + killer.getName() + " hat eine weitere Tötung der Chunkfight hinzugefügt");
+        }
+
+    }
+
+    //TODO Delete if BugFix
+    @EventHandler
+    public void kampfType(ChunkAttackEvent event) {
+        event.setKill(true);
+    }
 
     @EventHandler
     public void placeBlock(BlockPlaceEvent event) {
