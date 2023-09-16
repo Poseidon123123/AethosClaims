@@ -17,7 +17,7 @@ public class ChunkClaimEvent extends ChunkPlayerEvent {
     }
 
     public int getCost() {
-        return Math.min(cost, 0);
+        return Math.max(cost, 0);
     }
 
     public void setCost(int cost) {
