@@ -51,6 +51,7 @@ public class GrundstückCommand extends Command implements PluginIdentifiableCom
                 "\nBeansprucht: " + (mapper.claimedChunk(chunk) ? mapper.getHolders(chunk).stream().map(ChunkHolder::getUUID).map(Bukkit::getOfflinePlayer).map(OfflinePlayer::getName).collect(Collectors.toSet()) : "Keine") +
                 "\nGekauft: " + (mapper.boughtChunk(chunk) ? Bukkit.getOfflinePlayer((mapper.getChunkHolder(chunk).getUUID())).getName() : "Keiner") +
                 "\nAngreifbar: " + mapper.isAttacable(chunk) +
+                "\nBerechtigte: " + (mapper.boughtChunk(chunk) ? mapper.getChunkHolder(chunk).getPermissionList().keySet().stream().map(Bukkit::getOfflinePlayer).map(OfflinePlayer::getName).collect(Collectors.toSet()) : mapper.getHolders(chunk).stream().map(ChunkHolder::getName).collect(Collectors.toSet())) +
                 "\n§8===============";
     }
 
@@ -59,7 +60,7 @@ public class GrundstückCommand extends Command implements PluginIdentifiableCom
         PlayerChunkHolder playerChunkHolder = new PlayerChunkHolder(holder.getUniqueId());
         boolean isNearTown = firstChunk;
         if (mapper.boughtChunk(chunk)) {
-            holder.sendMessage("§4Du kannst einen gekauften Chunk nicht erneut kaufen");
+            holder.sendMessage("§4Du kannst einen gekauften Chunk nicht kaufen");
             return false;
         }
         if (!mapper.claimedChunk(chunk) && !firstChunk) {
@@ -70,7 +71,7 @@ public class GrundstückCommand extends Command implements PluginIdentifiableCom
         for (Chunk nearChunk : koordinatenImUmkreis(chunk, claims.getConfig().getInt("GS.Buy.EnemyChunkRange"))) {
             if (mapper.boughtChunk(nearChunk)) {
                 if (!mapper.getChunkHolder(nearChunk).getUUID().equals(playerChunkHolder.getUUID())) {
-                    holder.sendMessage("§4Du kannst hier keinen Chunk kaufen da es zu nahe an einem feindlichen Chunk ist, für nähre Infos nutze /gs map");
+                    holder.sendMessage("§4Du kannst hier keinen Chunk kaufen da es zu nahe an einem anderen gekauften Chunk ist, der nicht dir gehört. Für mehr Infos nutze /gs map");
                     return false;
                 }
             }
@@ -101,7 +102,7 @@ public class GrundstückCommand extends Command implements PluginIdentifiableCom
         for (Chunk nearChunk : koordinatenImUmkreis(chunk, claims.getConfig().getInt("GS.Buy.EnemyChunkRange"))) {
             if (mapper.boughtChunk(nearChunk)) {
                 if (!mapper.getChunkHolder(nearChunk).getUUID().equals(playerChunkHolder.getUUID())) {
-                    holder.sendMessage("§4Du kannst hier nicht claimen da es zu nahe an einem feindlichen Chunk ist, für nähre Infos nutze /gs map");
+                    holder.sendMessage("§4Du kannst hier nicht claimen da es zu nahe an einem anderen gekauften Chunk ist, der nicht dir gehört. Für mehr Infos nutze /gs map");
                     return false;
                 }
             }
@@ -130,6 +131,13 @@ public class GrundstückCommand extends Command implements PluginIdentifiableCom
         ChunkMapper mapper = claims.getWorldMapper(player.getWorld());
         Chunk chunk = player.getChunk();
         PlayerChunkHolder holder = new PlayerChunkHolder(player.getUniqueId());
+        if (args.length == 0) {
+            ChunkInfoEvent event = new ChunkInfoEvent(holder, chunk, getChunkInfoString(chunk));
+            claims.getServer().getPluginManager().callEvent(event);
+            if (!event.isCancelled()) {
+                player.sendMessage(event.getMessage());
+            }
+        }
         if (args.length == 1) {
             if (args[0].equalsIgnoreCase("buy")) {
                 boolean first = claims.getWorldMapper(player.getWorld()).getChunks(holder).isEmpty();
@@ -156,7 +164,7 @@ public class GrundstückCommand extends Command implements PluginIdentifiableCom
                             player.sendMessage("§aDu hast den Chunk " + chunk.getX() + ", " + chunk.getZ() + " für dich gekauft");
                             if (first) {
                                 mapper.claimChunk(chunk, holder);
-                                player.sendMessage("§2Da es dein Erster Chunk ist wurde dir das beanspruchen erlassen");
+                                player.sendMessage("§2Da es dein erster Chunk ist, wurde dir das Beanspruchen erlassen");
                             }
                         } else {
                             player.sendMessage("§4Die Zeit um dein Gebiet vor dem Kauf anzugreifen ist noch nicht um");
@@ -197,13 +205,6 @@ public class GrundstückCommand extends Command implements PluginIdentifiableCom
                             player.sendMessage("§6Der beanspruchte Chunk wurde auch von anderen Parteien beansprucht nutze /gs startfight um darum zu kämpfen");
                         }
                     }
-                }
-            }
-            if (args[0].equalsIgnoreCase("info")) {
-                ChunkInfoEvent event = new ChunkInfoEvent(holder, chunk, getChunkInfoString(chunk));
-                claims.getServer().getPluginManager().callEvent(event);
-                if (!event.isCancelled()) {
-                    player.sendMessage(event.getMessage());
                 }
             }
             if (args[0].equalsIgnoreCase("map")) {
@@ -256,6 +257,9 @@ public class GrundstückCommand extends Command implements PluginIdentifiableCom
                     }
                 }
             }
+            if (args[0].equalsIgnoreCase("perm")) {
+                player.sendMessage("§4Um /gs perm zu verwenden, nutze /gs perm [add/remove] [name] [permission]");
+            }
         }
         if (args.length == 2) {
             if (args[0].equalsIgnoreCase("fight")) {
@@ -282,6 +286,10 @@ public class GrundstückCommand extends Command implements PluginIdentifiableCom
                     ClaimFighter fighter = new ClaimFighter(LocalDateTime.now(), event.getFighter(), event.isKill(), event.getChunk());
                     holderSet.forEach(holder1 -> holder1.sendMessage("§9Der Chunk " + chunk.getZ() + ", " + chunk.getX() + " wurde von " + holder.getName() + " angegriffen. Die Kampfart ist " + (fighter.isKill() ? "Tötungen" : "Wirtschaft") + ". Der Kampf Beginnt jetzt!"));
                 }
+            } else if (args[0].equalsIgnoreCase("perm")) {
+                player.sendMessage("§4Um /gs perm zu verwenden, nutze /gs perm [add/remove] [name] [permission]");
+            } else {
+                player.sendMessage("§4Zu viele Argumente");
             }
         }
         if (args.length == 3) {
@@ -302,6 +310,10 @@ public class GrundstückCommand extends Command implements PluginIdentifiableCom
                     fighter.addScore(holder, money);
                     player.sendMessage("§2Du hast " + money + " zum bieten hinzugefügt");
                 }
+            } else if (args[0].equalsIgnoreCase("perm")) {
+                player.sendMessage("§4Um /gs perm zu verwenden, nutze /gs perm [add/remove] [name] [permission]");
+            } else {
+                player.sendMessage("§4Zu viele Argumente");
             }
         }
         if (args.length == 4) {
@@ -335,7 +347,12 @@ public class GrundstückCommand extends Command implements PluginIdentifiableCom
                         player.sendMessage("§4Du musst auf einem gekauften Chunk sein um einem Spieler Rechte zu nehmen");
                     }
                 }
+            } else {
+                player.sendMessage("§4Zu viele Argumente");
             }
+        }
+        if (args.length >= 5) {
+            player.sendMessage("§4Du hast zu viele Argumente");
         }
 
         return true;
@@ -349,7 +366,7 @@ public class GrundstückCommand extends Command implements PluginIdentifiableCom
     @Override
     public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) throws IllegalArgumentException {
         if (args.length <= 1) {
-            return List.of("buy", "claim", "fight", "info", "map", "perm");
+            return List.of("buy", "claim", "fight", "map", "perm");
         } else if (args.length == 2) {
             if (args[0].equalsIgnoreCase("Perm")) {
                 return List.of("add", "remove");
