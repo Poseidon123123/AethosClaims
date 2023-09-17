@@ -1,6 +1,7 @@
-package aethosprojekts.aethosclaims;
+package aethosprojekts.aethosclaims.chunks;
 
-import aethosprojekts.aethosclaims.Interfaces.ChunkHolder;
+import aethosprojekts.aethosclaims.AethosClaims;
+import aethosprojekts.aethosclaims.api.ChunkHolder;
 import org.bukkit.Chunk;
 
 import java.time.Duration;

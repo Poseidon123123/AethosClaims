@@ -1,7 +1,8 @@
-package aethosprojekts.aethosclaims;
+package aethosprojekts.aethosclaims.chunks;
 
-import aethosprojekts.aethosclaims.Interfaces.ChunkHolder;
-import aethosprojekts.aethosclaims.Interfaces.ChunkPermission;
+import aethosprojekts.aethosclaims.AethosClaims;
+import aethosprojekts.aethosclaims.api.ChunkHolder;
+import aethosprojekts.aethosclaims.api.ChunkPermission;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;

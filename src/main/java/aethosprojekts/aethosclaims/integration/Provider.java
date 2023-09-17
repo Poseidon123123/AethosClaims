@@ -1,4 +1,4 @@
-package aethosprojekts.aethosclaims;
+package aethosprojekts.aethosclaims.integration;
 
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;

@@ -1,7 +1,7 @@
 package aethosprojekts.aethosclaims.events;
 
-import aethosprojekts.aethosclaims.Interfaces.ChunkHolder;
-import aethosprojekts.aethosclaims.Interfaces.ChunkPermission;
+import aethosprojekts.aethosclaims.api.ChunkHolder;
+import aethosprojekts.aethosclaims.api.ChunkPermission;
 import org.bukkit.Chunk;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;

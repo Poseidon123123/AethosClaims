@@ -1,4 +1,4 @@
-package aethosprojekts.aethosclaims.Interfaces;
+package aethosprojekts.aethosclaims.api;
 
 import org.bukkit.entity.Player;
 

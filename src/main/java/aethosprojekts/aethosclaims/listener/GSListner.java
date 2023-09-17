@@ -1,7 +1,11 @@
-package aethosprojekts.aethosclaims.listner;
+package aethosprojekts.aethosclaims.listener;
 
-import aethosprojekts.aethosclaims.*;
+import aethosprojekts.aethosclaims.AethosClaims;
+import aethosprojekts.aethosclaims.ClaimFighter;
+import aethosprojekts.aethosclaims.chunks.ChunkMapper;
+import aethosprojekts.aethosclaims.chunks.PlayerChunkHolder;
 import aethosprojekts.aethosclaims.events.ChunkAttackEvent;
+import aethosprojekts.aethosclaims.permissions.DefaultPermission;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

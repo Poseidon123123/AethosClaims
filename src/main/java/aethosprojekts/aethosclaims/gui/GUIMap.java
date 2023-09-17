@@ -1,7 +1,7 @@
-package aethosprojekts.aethosclaims.GUI;
+package aethosprojekts.aethosclaims.gui;
 
 import aethosprojekts.aethosclaims.AethosClaims;
-import aethosprojekts.aethosclaims.Interfaces.ChunkHolder;
+import aethosprojekts.aethosclaims.api.ChunkHolder;
 import org.bukkit.Chunk;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;

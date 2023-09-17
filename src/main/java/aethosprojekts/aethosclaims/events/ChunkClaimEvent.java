@@ -1,6 +1,6 @@
 package aethosprojekts.aethosclaims.events;
 
-import aethosprojekts.aethosclaims.Interfaces.ChunkHolder;
+import aethosprojekts.aethosclaims.api.ChunkHolder;
 import org.bukkit.Chunk;
 import org.jetbrains.annotations.NotNull;
 

@@ -1,9 +1,9 @@
-package aethosprojekts.aethosclaims.GUI;
+package aethosprojekts.aethosclaims.gui;
 
 import aethosprojekts.aethosclaims.AethosClaims;
-import aethosprojekts.aethosclaims.ChunkMapper;
-import aethosprojekts.aethosclaims.GrundstückCommand;
-import aethosprojekts.aethosclaims.Interfaces.ChunkHolder;
+import aethosprojekts.aethosclaims.api.ChunkHolder;
+import aethosprojekts.aethosclaims.chunks.ChunkMapper;
+import aethosprojekts.aethosclaims.commands.GrundstückCommand;
 import org.bukkit.Chunk;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;

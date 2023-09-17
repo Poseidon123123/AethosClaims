@@ -1,6 +1,7 @@
-package aethosprojekts.aethosclaims;
+package aethosprojekts.aethosclaims.permissions;
 
-import aethosprojekts.aethosclaims.Interfaces.ChunkPermission;
+import aethosprojekts.aethosclaims.AethosClaims;
+import aethosprojekts.aethosclaims.api.ChunkPermission;
 import org.bukkit.NamespacedKey;
 
 public enum DefaultPermission implements ChunkPermission {

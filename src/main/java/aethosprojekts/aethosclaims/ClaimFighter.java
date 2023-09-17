@@ -1,6 +1,8 @@
 package aethosprojekts.aethosclaims;
 
-import aethosprojekts.aethosclaims.Interfaces.ChunkHolder;
+import aethosprojekts.aethosclaims.api.ChunkHolder;
+import aethosprojekts.aethosclaims.chunks.ChunkMapper;
+import aethosprojekts.aethosclaims.utils.Helper;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.World;

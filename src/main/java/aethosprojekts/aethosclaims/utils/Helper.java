@@ -1,6 +1,6 @@
-package aethosprojekts.aethosclaims;
+package aethosprojekts.aethosclaims.utils;
 
-import aethosprojekts.aethosclaims.Interfaces.ChunkHolder;
+import aethosprojekts.aethosclaims.api.ChunkHolder;
 
 import java.util.HashMap;
 import java.util.Map;

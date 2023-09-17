@@ -1,8 +1,14 @@
-package aethosprojekts.aethosclaims;
+package aethosprojekts.aethosclaims.commands;
 
-import aethosprojekts.aethosclaims.GUI.GUIMap;
-import aethosprojekts.aethosclaims.Interfaces.ChunkHolder;
+import aethosprojekts.aethosclaims.AethosClaims;
+import aethosprojekts.aethosclaims.ClaimFighter;
+import aethosprojekts.aethosclaims.api.ChunkHolder;
+import aethosprojekts.aethosclaims.chunks.ChunkMapper;
+import aethosprojekts.aethosclaims.chunks.PlayerChunkHolder;
 import aethosprojekts.aethosclaims.events.*;
+import aethosprojekts.aethosclaims.gui.GUIMap;
+import aethosprojekts.aethosclaims.integration.Provider;
+import aethosprojekts.aethosclaims.permissions.DefaultPermission;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
@@ -25,7 +31,7 @@ import java.util.stream.Collectors;
 public class GrundstückCommand extends Command implements PluginIdentifiableCommand {
     private final AethosClaims claims;
 
-    protected GrundstückCommand(AethosClaims claims) {
+    public GrundstückCommand(AethosClaims claims) {
         super("Grundstück");
         setAliases(List.of("gs"));
         this.claims = claims;
